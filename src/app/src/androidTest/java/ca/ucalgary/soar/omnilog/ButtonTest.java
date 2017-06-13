@@ -72,7 +72,7 @@ public class ButtonTest {
         MainActivity mActivity = mActivityRule.launchActivity(intent);
         Button button = (Button) mActivity.findViewById(R.id.button);
 
-        button.performClick();
+        button.callOnClick();
         assertTrue(mActivity.is_logging());
     }
 
@@ -84,8 +84,8 @@ public class ButtonTest {
         MainActivity mActivity = mActivityRule.launchActivity(intent);
         Button button = (Button) mActivity.findViewById(R.id.button);
 
-        button.performClick();
-        button.performClick();
+        button.callOnClick();
+        button.callOnClick();
         assertFalse(mActivity.is_logging());
 
     }
