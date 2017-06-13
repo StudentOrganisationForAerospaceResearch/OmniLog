@@ -18,9 +18,8 @@ public class MainActivity extends AppCompatActivity {
         final Button button = (Button) findViewById(R.id.button);
         button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
-               if(is_logging()){
+               if(!is_logging()){
                    startLogging();
-                   logging=true;
                }
                else{
                    stopLogging();
