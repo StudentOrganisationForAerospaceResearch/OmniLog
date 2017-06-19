@@ -100,6 +100,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
+    }
 
     public long get_timestamp(){
         return c.getTimeInMillis();
