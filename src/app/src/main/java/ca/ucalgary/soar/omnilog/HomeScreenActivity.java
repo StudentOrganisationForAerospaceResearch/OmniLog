@@ -1,11 +1,11 @@
 package ca.ucalgary.soar.omnilog;
 
 import android.Manifest;
+import android.app.Activity;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Calendar;
 
 
-public class HomeScreenActivity extends AppCompatActivity {
+public class HomeScreenActivity extends Activity {
     DataRecorder dataFile;
     boolean logging;
     Button button;
@@ -31,7 +31,7 @@ public class HomeScreenActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         while(!checkPermissions()) {
-            Log.e("Exception", "Permissions not granted.");
+            Log.w("Warning", "Permissions not granted.");
         }
 
         button = (Button) findViewById(R.id.button);
