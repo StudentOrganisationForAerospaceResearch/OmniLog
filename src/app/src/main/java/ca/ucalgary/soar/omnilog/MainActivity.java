@@ -6,10 +6,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
 public class MainActivity extends AppCompatActivity {
-
+    LogFile dataFile;
     boolean logging;
     Button button;
     TextView text;
@@ -23,8 +21,8 @@ public class MainActivity extends AppCompatActivity {
 
         button = (Button) findViewById(R.id.button);
         text = (TextView) findViewById(R.id.textView);
-        stopLogging();
-
+        text.setText("Not Logging");
+        logging = false;
 
         button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
@@ -45,12 +43,16 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startLogging(){
+        dataFile = new LogFile("log");
+        dataFile.writeToFile(new double[]{1.0, 2.0, 3.0});
         logging=true;
         text.setText("Logging");
 
     }
 
     public void stopLogging(){
+        dataFile.closeFile();
+        dataFile = null;
         logging=false;
         text.setText("Not Logging");
     }
