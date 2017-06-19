@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.os.Bundle;
+import android.support.v4.content.res.ResourcesCompat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -64,28 +65,27 @@ public class HomeScreenActivity extends Activity {
     };
 
 
-    public boolean is_logging(){
+    public boolean is_logging() {
         return logging;
     }
 
     public void startLogging(){
         dataFile = new DataRecorder("log");
         dataFile.writeToFile(new double[]{1.0, 2.0, 3.0});
+
         logging=true;
         text.setText("Logging");
+        button.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.logging, null));
 
-        button.setText("Stop Logging");
-        button.setBackgroundColor(Color.parseColor("#ff669900"));
     }
 
     public void stopLogging(){
         dataFile.closeFile();
         dataFile = null;
+
         logging=false;
         text.setText("Not Logging");
-
-        button.setText("Start Logging");
-        button.setBackgroundColor(Color.parseColor("#ffcc0000"));
+        button.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.start, null));
     }
 
     //Source: stackoverflow.com/a/41221852/5488468
