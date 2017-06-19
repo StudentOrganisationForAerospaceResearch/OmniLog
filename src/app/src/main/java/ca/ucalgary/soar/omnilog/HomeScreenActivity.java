@@ -2,6 +2,7 @@ package ca.ucalgary.soar.omnilog;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -17,8 +18,8 @@ import java.util.List;
 import java.util.Calendar;
 
 
-public class MainActivity extends AppCompatActivity {
-    LogFile dataFile;
+public class HomeScreenActivity extends AppCompatActivity {
+    DataRecorder dataFile;
     boolean logging;
     Button button;
     TextView text;
@@ -68,10 +69,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startLogging(){
-        dataFile = new LogFile("log");
+        dataFile = new DataRecorder("log");
         dataFile.writeToFile(new double[]{1.0, 2.0, 3.0});
         logging=true;
         text.setText("Logging");
+
+        button.setText("Stop Logging");
+        button.setBackgroundColor(Color.parseColor("#ff669900"));
     }
 
     public void stopLogging(){
@@ -79,6 +83,9 @@ public class MainActivity extends AppCompatActivity {
         dataFile = null;
         logging=false;
         text.setText("Not Logging");
+
+        button.setText("Start Logging");
+        button.setBackgroundColor(Color.parseColor("#ffcc0000"));
     }
 
     //Source: stackoverflow.com/a/41221852/5488468
@@ -105,6 +112,5 @@ public class MainActivity extends AppCompatActivity {
     public long get_timestamp(){
         return c.getTimeInMillis();
     }
-
 
 }

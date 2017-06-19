@@ -1,6 +1,5 @@
 package ca.ucalgary.soar.omnilog;
 
-import android.content.Context;
 import android.os.Environment;
 import android.util.Log;
 
@@ -9,12 +8,12 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class LogFile {
+public class DataRecorder {
     private FileOutputStream fOut;
     private OutputStreamWriter myOutWriter;
 
     // With help from https://stackoverflow.com/questions/35481924/write-a-string-to-a-file
-    LogFile(String fileName) {
+    DataRecorder(String fileName) {
         // Get the directory for the user's public pictures directory.
         System.out.println("Hello");
         final File path = Environment.getExternalStoragePublicDirectory("/OmniLog");
@@ -35,7 +34,7 @@ public class LogFile {
         {
             fOut = new FileOutputStream(file);
             myOutWriter = new OutputStreamWriter(fOut);
-            myOutWriter.append("# File initialised at: " + "# \n# Column Name (Units):");
+            myOutWriter.append("# File initialised at: " + "\n# \n# Column Name (Units):" + "\n\n");
 
             fOut.flush();
         }
