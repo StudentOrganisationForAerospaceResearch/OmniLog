@@ -14,12 +14,15 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import java.util.Calendar;
+
+
 public class MainActivity extends AppCompatActivity {
     LogFile dataFile;
     boolean logging;
     Button button;
     TextView text;
-
+    Calendar c;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,7 +50,18 @@ public class MainActivity extends AppCompatActivity {
         });
 
         logging=false;
+        button.setOnClickListener(buttonListner);
+
     }
+
+
+    private View.OnClickListener buttonListner= new View.OnClickListener(){
+        public void onClick(View v) {
+            if (!is_logging()) startLogging();
+            else stopLogging();
+        }
+    };
+
 
     public boolean is_logging(){
         return logging;
@@ -58,7 +72,6 @@ public class MainActivity extends AppCompatActivity {
         dataFile.writeToFile(new double[]{1.0, 2.0, 3.0});
         logging=true;
         text.setText("Logging");
-
     }
 
     public void stopLogging(){
@@ -87,6 +100,9 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
         return true;
+
+    public long get_timestamp(){
+        return c.getTimeInMillis();
     }
 
 
