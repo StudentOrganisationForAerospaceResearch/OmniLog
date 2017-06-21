@@ -9,13 +9,18 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 
 public class DataRecorder {
+    private double[][] dataBuffer;
     private FileOutputStream fOut;
     private OutputStreamWriter myOutWriter;
 
     // With help from https://stackoverflow.com/questions/35481924/write-a-string-to-a-file
-    DataRecorder(String fileName) {
+    DataRecorder(String fileName, int numSensors) {
+        dataBuffer = new double[10][numSensors];
+        createFile(fileName);
+    }
+
+    private void createFile(String fileName) {
         // Get the directory for the user's public pictures directory.
-        System.out.println("Hello");
         final File path = Environment.getExternalStoragePublicDirectory("/OmniLog");
 
         // Make sure the path directory exists.

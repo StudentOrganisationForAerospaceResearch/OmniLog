@@ -69,7 +69,7 @@ public class HomeScreenActivity extends Activity {
     }
 
     public void startLogging(){
-        dataFile = new DataRecorder("log");
+        dataFile = new DataRecorder("log", 1);
         dataFile.writeToFile(new double[]{1.0, 2.0, 3.0});
         logging=true;
         text.setText("Logging");
