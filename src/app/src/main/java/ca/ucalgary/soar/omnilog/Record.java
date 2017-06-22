@@ -8,21 +8,13 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-/**
- * Created by Colt on 19/06/2017.
- */
-
 public class Record {
     private FileOutputStream fOut;
     private OutputStreamWriter myOutWriter;
-    private String[] sensors;
-    private float[] data;
 
     // With help from https://stackoverflow.com/questions/35481924/write-a-string-to-a-file
-    Record(String fileName, String[] Sensors) {
+    Record(String fileName) {
         // Get the directory for the user's public pictures directory.
-        sensors = Sensors;
-        data = new float[sensors.length];
         System.out.println("Hello");
         final File path = Environment.getExternalStoragePublicDirectory("/OmniLog");
 
@@ -42,7 +34,7 @@ public class Record {
         {
             fOut = new FileOutputStream(file);
             myOutWriter = new OutputStreamWriter(fOut);
-            myOutWriter.append("# File initialised at: " + "# \n# Column Name (Units):");
+            myOutWriter.append("# File initialised at: " + "\n# \n# Column Name (Units):" + "\n\n");
 
             fOut.flush();
         }
@@ -51,8 +43,24 @@ public class Record {
             Log.e("Exception", "File init failed: " + e.toString());
         }
     }
+    public void writeToFile(String[] sensors) {
+        String sensorString = "";
 
-    public void writeToFile() {
+        for (String sensor : sensors) {
+            sensorString += (sensor + "|");
+        }
+
+        try {
+            myOutWriter.append(sensorString);
+            fOut.flush();
+        } catch (IOException e) {
+            Log.e("Exception", "File write failed: " + e.toString());
+        }
+        testWrite(sensorString);
+    }
+
+
+    public void writeToFile(float[] data) {
         String dataString = "";
 
         for (float dataPoint:data) {
@@ -66,6 +74,7 @@ public class Record {
         catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
         }
+        testWrite(dataString);
     }
 
     public void closeFile() {
@@ -81,7 +90,7 @@ public class Record {
 
     }
 
-    public boolean update(int sensor, float value) {
-        return false;
+    private void testWrite(String s) {
+        Log.d("Written", s);
     }
 }
