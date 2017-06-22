@@ -23,6 +23,9 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     private Record record;
     private int gpsIndex;
     private String[] sensors;
+    private float[] data;
+    private boolean logging;
+    private static final int recordDelay = 10;
     //private SensorEventListener
 
     //                           accel, mag,       ,gyro,light, press,     , proxi, grav, LA,  rota, humid, temp,                      sigmo                    geo-rot,                                                 station,motion
@@ -36,15 +39,16 @@ public class DataGatherer implements SensorEventListener, LocationListener {
             {}
     };*/
     int[] sensorMap = new int[sensorsAvailable.length];
-    public DataGatherer (SensorManager SM, LocationManager LM) {
+
+    public DataGatherer(SensorManager SM, LocationManager LM) {
         sm = SM;
         lm = LM;
 
         int count = 0;
         Sensor s;
         int j;
-        for(int i = 0; i < sensorsAvailable.length; i++) {
-            j = i+1;
+        for (int i = 0; i < sensorsAvailable.length; i++) {
+            j = i + 1;
             if (!sensorsAvailable[i])
                 continue;
 
@@ -62,8 +66,8 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         count += 3;
         sensors = new String[count];
         count = 0;
-        for(int i = 0; i < sensorsAvailable.length; i++) {
-            if(!sensorsAvailable[i])
+        for (int i = 0; i < sensorsAvailable.length; i++) {
+            if (!sensorsAvailable[i])
                 continue;
             switch (i) {
                 case 0:
@@ -191,21 +195,20 @@ public class DataGatherer implements SensorEventListener, LocationListener {
             }
         }
         try {
-            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 sensors[count] = "GPS_Latitude";
-                sensors[count+1] = "GPS_Longitude";
-                sensors[count+2] = "GPS_Altitude";
+                sensors[count + 1] = "GPS_Longitude";
+                sensors[count + 2] = "GPS_Altitude";
                 gpsIndex = count;
-            }
-            else if(lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            } else if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 sensors[count] = "Network_Latitude";
-                sensors[count+1] = "Network_Longitude";
-                sensors[count+2] = "Network_Altitude";
+                sensors[count + 1] = "Network_Longitude";
+                sensors[count + 2] = "Network_Altitude";
                 gpsIndex = count;
             }
+        } catch (SecurityException e) {
         }
-        catch(SecurityException e) {
-        }
+        data = new float[sensors.length];
         testSensorsAvailable();
         testSensorString(sensors);
         testMapTo();
@@ -213,56 +216,70 @@ public class DataGatherer implements SensorEventListener, LocationListener {
 
     public void startLogging() {
         Sensor s;
-        for(int i = 1; i <= sensorsAvailable.length; i++) {
+        for (int i = 1; i <= sensorsAvailable.length; i++) {
             s = sm.getDefaultSensor(i);
             sm.registerListener(this, s, sm.SENSOR_DELAY_FASTEST);
         }
         try {
-            if(lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
+            if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-            }
-            else if(lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            } else if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
             }
+        } catch (SecurityException e) {
         }
-        catch(SecurityException e) {
-        }
+        logging = true;
+        record = new Record("Record");
+        record.writeToFile(sensors);
+        Runnable r = new Runnable() {
+            public void run() {
+                while (logging) {
+                    try {
+                        Thread.sleep(recordDelay);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    }
+                    record.writeToFile(data);
 
-        record = new Record("Record", sensors);
+                }
+            }
+        };
+        new Thread(r).start();
     }
 
     public void stopLogging() {
         sm.unregisterListener(this);
         lm.removeUpdates(this);
+        logging = false;
         record.closeFile();
     }
 
     private void testSensorsAvailable() {
-        for(int i = 0; i < sensorsAvailable.length; i++) {
-            if(sensorsAvailable[i])
+        for (int i = 0; i < sensorsAvailable.length; i++) {
+            if (sensorsAvailable[i])
                 Log.d("SensorsAvailable", Integer.toString(i));
         }
     }
 
-    private void testSensorString(String[] s){
-        for(int i = 0; i < s.length; i++) {
+    private void testSensorString(String[] s) {
+        for (int i = 0; i < s.length; i++) {
             Log.d("SensorString", s[i]);
         }
     }
 
     private void testMapTo() {
-        for(int i = 0; i < sensorMap.length; i++) {
+        for (int i = 0; i < sensorMap.length; i++) {
             Log.d("SensorMap", Integer.toString(sensorMap[i]));
         }
     }
 
     @Override
     public void onSensorChanged(SensorEvent event) {
-        int i = sensorMap[event.sensor.getType()-1];
-        record.update(i, event.values[0]);
-        if (i == 1 || i == 2 || i == 3 || i== 4 || i == 9 || i == 10 || i == 11 || i == 14 || i == 15 || i == 16 || i == 20) {
-            record.update(i+1, event.values[1]);
-            record.update(i+2, event.values[2]);
+        int i = sensorMap[event.sensor.getType() - 1];
+        data[i] = event.values[0];
+        if (i == 1 || i == 2 || i == 3 || i == 4 || i == 9 || i == 10 || i == 11 || i == 14 || i == 15 || i == 16 || i == 20) {
+            data[i + 1] = event.values[1];
+            data[i + 2] = event.values[2];
         }
     }
 
@@ -273,9 +290,9 @@ public class DataGatherer implements SensorEventListener, LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        record.update(gpsIndex, (float)location.getLatitude());
-        record.update(gpsIndex+1, (float)location.getLongitude());
-        record.update(gpsIndex+2, (float)location.getAltitude());
+        data[gpsIndex] = (float) location.getLatitude();
+        data[gpsIndex + 1] = (float) location.getLongitude();
+        data[gpsIndex + 2] = (float) location.getAltitude();
     }
 
     @Override
