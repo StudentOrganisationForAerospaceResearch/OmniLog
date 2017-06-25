@@ -1,14 +1,16 @@
 package ca.ucalgary.soar.omnilog;
 
+import android.app.PendingIntent;
+import android.content.Intent;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
 import android.location.LocationListener;
 import android.hardware.Sensor;
 import android.os.Bundle;
+import android.telephony.SmsManager;
 import android.util.Log;
 
 import java.util.ArrayList;
@@ -298,6 +300,14 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         for (int i = 0; i < sensorMap.length; i++) {
             Log.d("SensorMap", Integer.toString(sensorMap[i]));
         }
+    }
+
+    public String status() {
+        String newline = System.getProperty("line.separator");//This will retrieve line separator dependent on OS.
+        String stat = "Parachute Status:" + newline + "   Drouge: Deployed" + newline + "Main: Not Deployed" + newline + newline +
+                "Altitude: " + data[gpsIndex+2] + "m" + newline + "GPS: " + data[gpsIndex] + ", " + data[gpsIndex+1] + newline +
+                "Batt: 90%" + newline + "Landed: false";
+        return stat;
     }
 
     @Override
