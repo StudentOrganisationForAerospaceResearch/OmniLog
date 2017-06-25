@@ -2,19 +2,18 @@ package ca.ucalgary.soar.omnilog;
 
 import android.content.Context;
 
-import java.util.Calendar;
-
 public class DataGatheringFacade {
-    Context context;
-    Record dataFile;
-    DataGatherer dataGatherer;
-    ParachuteController parachutes;
-    static Calendar c;
+    private Context context;
+    private Record dataFile;
+    private DataGatherer dataGatherer;
+    private ParachuteController parachutes;
+
 
 
     public DataGatheringFacade(Context context) {
+        this.dataFile = new Record("log");
         this.context = context;
-        dataGatherer = new DataGatherer(this.context, new Record("log"));
+        dataGatherer = new DataGatherer(this.context, dataFile);
         parachutes = new ParachuteController();
     }
 
@@ -32,9 +31,5 @@ public class DataGatheringFacade {
     public void newFile(String fileName) {
         dataFile.closeFile();
         dataFile = new Record(fileName);
-    }
-
-    public static long get_timestamp(){
-        return c.getTimeInMillis();
     }
 }

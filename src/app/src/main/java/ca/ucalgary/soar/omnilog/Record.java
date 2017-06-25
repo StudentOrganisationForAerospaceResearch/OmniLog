@@ -15,7 +15,6 @@ class Record {
     // With help from https://stackoverflow.com/questions/35481924/write-a-string-to-a-file
     Record(String fileName) {
         // Get the directory for the user's public pictures directory.
-        System.out.println("Hello");
         final File path = Environment.getExternalStoragePublicDirectory("/OmniLog");
 
         // Make sure the path directory exists.
@@ -36,7 +35,7 @@ class Record {
             fOut = new FileOutputStream(file);
             myOutWriter = new OutputStreamWriter(fOut);
             myOutWriter.append("# File initialised at: " +
-                    String.valueOf(DataGatheringFacade.get_timestamp())
+                    String.valueOf(System.currentTimeMillis())
                     + "\n# \n# Column Name (Units):" + "\n\n");
 
             fOut.flush();

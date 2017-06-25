@@ -39,6 +39,8 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     public DataGatherer(Context context, Record recorder) {
         this.context = context;
         this.record = recorder;
+        sm = (SensorManager)this.context.getSystemService(SENSOR_SERVICE);
+        lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
 
         //Variable used to count the number of sensor "fields" actually available on the device
         //Thus it only increments when the device actually has a the sensor we are looking for and will increment by the number of fields
@@ -244,8 +246,6 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     }
 
     public void startLogging() {
-        sm = (SensorManager)this.context.getSystemService(SENSOR_SERVICE);
-        lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
         Sensor s;
 
         //Loop through the available sensors and start listening for them at the fastest rate possible
@@ -281,7 +281,7 @@ public class DataGatherer implements SensorEventListener, LocationListener {
             }
         });
 
-        record.writeTextToFile("Started collecting data at: " + String.valueOf(DataGatheringFacade.get_timestamp()));
+        record.writeTextToFile("Started collecting data at: " + String.valueOf(System.currentTimeMillis()));
         thread.start();
     }
 
@@ -291,9 +291,7 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     public void stopLogging() {
         thread.interrupt();
         logging = false;
-        sm.unregisterListener(this);
-        lm.removeUpdates(this);
-        record.writeTextToFile("Stopped collecting data at: " + String.valueOf(DataGatheringFacade.get_timestamp()));
+        record.writeTextToFile("Stopped collecting data at: " + String.valueOf(System.currentTimeMillis()));
     }
 
     private void testSensorsAvailable() {
