@@ -16,10 +16,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class HomeScreenActivity extends Activity {
-    DataGatheringFacade dataGatherer;
-    boolean logging;
-    Button button;
-    TextView text;
+    private DataGatheringFacade dataGatherer;
+    private boolean logging;
+    private Button button;
+    private TextView text;
 
 
     @Override
@@ -33,7 +33,6 @@ public class HomeScreenActivity extends Activity {
 
         button = (Button) findViewById(R.id.button);
         text = (TextView) findViewById(R.id.textView);
-        text.setText("Not Logging");
         logging = false;
 
         button.setOnClickListener(new View.OnClickListener(){
@@ -48,12 +47,12 @@ public class HomeScreenActivity extends Activity {
         });
 
         logging=false;
-        button.setOnClickListener(buttonListner);
+        button.setOnClickListener(buttonListener);
         dataGatherer = new DataGatheringFacade(this);
     }
 
 
-    private View.OnClickListener buttonListner= new View.OnClickListener(){
+    private View.OnClickListener buttonListener = new View.OnClickListener(){
         public void onClick(View v) {
             if (!is_logging()) startLogging();
             else stopLogging();
@@ -69,7 +68,7 @@ public class HomeScreenActivity extends Activity {
         dataGatherer.start();
 
         logging=true;
-        text.setText("Logging");
+        text.setText(R.string.logging);
         button.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.logging, null));
 
     }
@@ -78,7 +77,7 @@ public class HomeScreenActivity extends Activity {
         dataGatherer.stop();
 
         logging=false;
-        text.setText("Not Logging");
+        text.setText(R.string.not_logging);
         button.setBackground(ResourcesCompat.getDrawable(getResources(),R.drawable.start, null));
     }
 
