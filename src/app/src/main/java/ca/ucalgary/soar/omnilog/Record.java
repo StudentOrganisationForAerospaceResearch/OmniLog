@@ -8,7 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 
-public class Record {
+class Record {
     private FileOutputStream fOut;
     private OutputStreamWriter myOutWriter;
 
@@ -27,14 +27,17 @@ public class Record {
             }
         }
 
-
+        // Once name is chosen, create file
         final File file = new File(path, fileName + ".txt");
 
+        // Initialise file and writers
         try
         {
             fOut = new FileOutputStream(file);
             myOutWriter = new OutputStreamWriter(fOut);
-            myOutWriter.append("# File initialised at: " + "\n# \n# Column Name (Units):" + "\n\n");
+            myOutWriter.append("# File initialised at: " +
+                    String.valueOf(DataGatheringFacade.get_timestamp())
+                    + "\n# \n# Column Name (Units):" + "\n\n");
 
             fOut.flush();
         }
@@ -43,30 +46,36 @@ public class Record {
             Log.e("Exception", "File init failed: " + e.toString());
         }
     }
-    public void writeToFile(String[] sensors) {
-        String sensorString = "";
 
-        for (String sensor : sensors) {
-            sensorString += (sensor + "|");
-        }
 
+    /**
+     * Format all data and print to file
+     *
+     * @param text Data to be written
+     */
+    public void writeTextToFile(String text) {
+        // Write string to file
         try {
-            myOutWriter.append(sensorString);
+            myOutWriter.append(text);
             fOut.flush();
         } catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
         }
-        testWrite(sensorString);
     }
 
 
-    public void writeToFile(float[] data) {
+    /**
+     * Format all data and print to file
+     *
+     * @param sensorData Data to be written
+     */
+    public void writeDataToFile(float[] sensorData) {
         String dataString = "";
 
-        for (float dataPoint:data) {
-            dataString += (dataPoint + "|");
-        }
+        // Format all data into desired format
+        for (float dataPoint:sensorData) {dataString += (dataPoint + "|");}
 
+        // Write string to file
         try {
             myOutWriter.append(dataString);
             fOut.flush();
@@ -74,9 +83,12 @@ public class Record {
         catch (IOException e) {
             Log.e("Exception", "File write failed: " + e.toString());
         }
-        testWrite(dataString);
     }
 
+
+    /**
+     * Closes the file to prevent a memory leak
+     */
     public void closeFile() {
         try
         {
@@ -87,10 +99,5 @@ public class Record {
         {
             Log.e("Exception", "File closure failed: " + e.toString());
         }
-
-    }
-
-    private void testWrite(String s) {
-        Log.d("Written", s);
     }
 }

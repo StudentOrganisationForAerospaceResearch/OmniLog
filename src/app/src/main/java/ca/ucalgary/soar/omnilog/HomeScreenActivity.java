@@ -11,23 +11,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.hardware.SensorManager;
-import android.location.LocationManager;
-import android.content.Context;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import java.util.Calendar;
-
-
 public class HomeScreenActivity extends Activity {
-    Record dataFile;
+    DataGatheringFacade dataGatherer;
     boolean logging;
     Button button;
     TextView text;
-    Calendar c;
-    DataGatherer dataGatherer;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +35,6 @@ public class HomeScreenActivity extends Activity {
         text = (TextView) findViewById(R.id.textView);
         text.setText("Not Logging");
         logging = false;
-        dataGatherer = new DataGatherer((SensorManager)this.getSystemService(SENSOR_SERVICE), (LocationManager)this.getSystemService(Context.LOCATION_SERVICE));
 
         button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){
@@ -57,7 +49,7 @@ public class HomeScreenActivity extends Activity {
 
         logging=false;
         button.setOnClickListener(buttonListner);
-
+        dataGatherer = new DataGatheringFacade(this);
     }
 
 
@@ -74,9 +66,7 @@ public class HomeScreenActivity extends Activity {
     }
 
     public void startLogging(){
-        dataGatherer.startLogging();
-        dataFile = new Record("log");
-        dataFile.writeToFile(new float[]{1.0f, 2.0f, 3.0f});
+        dataGatherer.start();
 
         logging=true;
         text.setText("Logging");
@@ -85,9 +75,7 @@ public class HomeScreenActivity extends Activity {
     }
 
     public void stopLogging(){
-        dataGatherer.stopLogging();
-        dataFile.closeFile();
-        dataFile = null;
+        dataGatherer.stop();
 
         logging=false;
         text.setText("Not Logging");
@@ -96,12 +84,14 @@ public class HomeScreenActivity extends Activity {
 
     //Source: stackoverflow.com/a/41221852/5488468
     private boolean checkPermissions() {
+        // Permissions to ask for
         String[] permissions = new String[]{
                 Manifest.permission.WRITE_EXTERNAL_STORAGE,
                 Manifest.permission.ACCESS_FINE_LOCATION,
         };
         int result;
 
+        // Give user prompt to grant permissions
         List<String> listPermissionsNeeded = new ArrayList<>();
         for (String p : permissions) {
             result = ContextCompat.checkSelfPermission(this, p);
@@ -114,10 +104,6 @@ public class HomeScreenActivity extends Activity {
             return false;
         }
         return true;
-    }
-
-    public long get_timestamp(){
-        return c.getTimeInMillis();
     }
 
 }

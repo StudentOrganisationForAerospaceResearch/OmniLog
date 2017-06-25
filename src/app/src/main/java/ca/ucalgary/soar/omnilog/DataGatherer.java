@@ -1,8 +1,8 @@
 package ca.ucalgary.soar.omnilog;
 
+import android.content.Context;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
-import android.hardware.SensorListener;
 import android.hardware.SensorManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -11,13 +11,12 @@ import android.hardware.Sensor;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.util.ArrayList;
-
-/**
- * Created by Colt on 18/06/2017.
- */
+import static android.content.Context.SENSOR_SERVICE;
+import static android.hardware.SensorManager.SENSOR_DELAY_FASTEST;
 
 public class DataGatherer implements SensorEventListener, LocationListener {
+    private Thread thread;
+    private Context context;
     private SensorManager sm;
     private LocationManager lm;
     private Record record;
@@ -27,20 +26,19 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     private boolean logging;
     private static final int recordDelay = 10;
 
-    //This is a preconstructed list denoting the sensors we actually care to listen for, flase represents those we don't such as heart rate etc.
-    //                           accel, mag,       ,gyro,light, press,     , proxi, grav, LA,  rota, humid, temp,                      sigmo                geo-rot,                                                 station,motion
-    boolean[] sensorsAvailable = {true, true, false, true, true, true, false, false, true, true, true, true, true, false, false, false, false, false, false, true,};
-    //                              1     2      3     4     5     6     7      8      9    10    11    12    13    14     15     16     17     18     19     20
+    //This is a preconstructed list denoting the sensors we actually care to listen for, false represents those we don't such as heart rate etc.
+    //                                  accel, mag,       ,gyro,light, press,     , proxi, grav, LA,  rota, humid, temp,                      sigmo                geo-rot,                                                 station,motion
+    static boolean[] sensorsAvailable = {true, true, false, true, true, true, false, false, true, true, true, true, true, false, false, false, false, false, false, true,};
+    //                                    1     2      3     4     5     6     7      8      9    10    11    12    13    14     15     16     17     18     19     20
     //
     /*String[][] sensors = new String[][]{
             {}
     };*/
     int[] sensorMap = new int[sensorsAvailable.length];
 
-    public DataGatherer(SensorManager SM, LocationManager LM) {
-        //Stores the sensorManager and locationManager used by the device as passed down from the activity.
-        sm = SM;
-        lm = LM;
+    public DataGatherer(Context context, Record recorder) {
+        this.context = context;
+        this.record = recorder;
 
         //Variable used to count the number of sensor "fields" actually available on the device
         //Thus it only increments when the device actually has a the sensor we are looking for and will increment by the number of fields
@@ -48,32 +46,36 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         int count = 0;
         Sensor s;
 
-        //j is used as an adapter for sensorManager and sensorsAvaible. SensorManager's sensors start at 1, our array starts at index 0
-        int j;
+        //sensorIndex is used as an adapter for sensorManager and sensorsAvaible. SensorManager's sensors start at 1, our array starts at index 0
+        int sensorIndex;
 
         //Loop through the preconstructed list of sensors we wish to listen for
         for (int i = 0; i < sensorsAvailable.length; i++) {
-            //Once again j is used to map sensorsAvaiable to SensorManager's sensors which start at 1
-            j = i + 1;
+            //Once again sensorIndex is used to map sensorsAvaiable to SensorManager's sensors which start at 1
+            sensorIndex = i + 1;
             //If we do not care for the sensor then we skip it
             if (!sensorsAvailable[i])
                 continue;
 
             //If we do care look for the default sensor on the device
-            s = sm.getDefaultSensor(j);
+            s = sm.getDefaultSensor(sensorIndex);
             //Check if it returns null, if it did the device does not have the sensors so set it to false in our list
             //For example the nexus 5 we are using does not have a humidity sensors even though we would like to look for it (set as true in sensorsAvailable)
             if (s == null) {
                 sensorsAvailable[i] = false;
                 continue;
             }
+
             //The count is increased by 3 for the sensors that return multiple values i.e.: accelerometer, rotation vector, magnetic field, etc.
-            if (j == 1 || j == 2 || j == 3 || j == 4 || j == 9 || j == 10 || j == 11 || j == 14 || j == 15 || j == 16 || j == 20) {
+            if (sensorIndex == 1 || sensorIndex == 2 || sensorIndex == 3 || sensorIndex == 4 ||
+                    sensorIndex == 9 || sensorIndex == 10 || sensorIndex == 11 || sensorIndex == 14
+                    || sensorIndex == 15 || sensorIndex == 16 || sensorIndex == 20) {
                 count += 3;
             } else {
                 count++;
             }
         }
+
         //Increase it by 3 because we would like to add the gps Latitude, Longitude, and Altitude
         count += 3;
         //Construct a new array of Strings that will be used to form the "header" of the file (its format)
@@ -81,13 +83,14 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         sensors = new String[count];
         //Start count back at 0, waste not want not (we'll use it for this loop)
         count = 0;
-        //Run through the new list of avaiable sensors (with the ones we don't have crossed out)
+        //Run through the new list of available sensors (with the ones we don't have crossed out)
         for (int i = 0; i < sensorsAvailable.length; i++) {
-            //If we the sensor is not avaiable
-            if (!sensorsAvailable[i])
-                continue;
+            //If the sensor is not available
+            if (!sensorsAvailable[i]) continue;
+
             //If it is we will append the field name's associated with the sensor to our sensor field list
-            //Count references how "full" our sensor field array is, and increments by the number of fields added to it
+            //Count references how "full" our sensor field array is, and increments by the number of fields added to i
+
             switch (i) {
                 case 0:
                     sensorMap[i] = count;
@@ -213,6 +216,7 @@ public class DataGatherer implements SensorEventListener, LocationListener {
                     break;
             }
         }
+
         //Attempt to add the gps fields if it is available
         try {
             if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
@@ -227,7 +231,9 @@ public class DataGatherer implements SensorEventListener, LocationListener {
                 gpsIndex = count;
             }
         } catch (SecurityException e) {
+            Log.e("Error", "Security exception when checking GPS");
         }
+
         //Construct the data array that will contain the data for each field we have
         data = new float[sensors.length];
         //Runs some tests, you can check them out in the log, it will display the sensorsAvailable after crossing out the ones we don't have
@@ -238,11 +244,14 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     }
 
     public void startLogging() {
+        sm = (SensorManager)this.context.getSystemService(SENSOR_SERVICE);
+        lm = (LocationManager)this.context.getSystemService(Context.LOCATION_SERVICE);
         Sensor s;
-        //Loop through the available sensors and start listenting for them at the fastest rate possible
+
+        //Loop through the available sensors and start listening for them at the fastest rate possible
         for (int i = 1; i <= sensorsAvailable.length; i++) {
             s = sm.getDefaultSensor(i);
-            sm.registerListener(this, s, sm.SENSOR_DELAY_FASTEST);
+            sm.registerListener(this, s, SENSOR_DELAY_FASTEST);
         }
 
         //Attempt to listen for the gps if it is available
@@ -253,32 +262,38 @@ public class DataGatherer implements SensorEventListener, LocationListener {
                 lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
             }
         } catch (SecurityException e) {
+            Log.e("Error", "Permissions error for GPS or Network");
         }
+
         //Set logging to true and open up a thread that will continuously write the sensor readings until logging is false (when logging is stopped)
         logging = true;
-        record = new Record("Record");
-        record.writeToFile(sensors);
-        Runnable r = new Runnable() {
+        thread = new Thread(new Runnable() {
             public void run() {
-                while (logging) {
-                    try {
+                try {
+                    while (!Thread.currentThread().isInterrupted()) {
                         Thread.sleep(recordDelay);
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    }
-                    record.writeToFile(data);
+                        record.writeDataToFile(data);
 
+                    }
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
                 }
             }
-        };
-        new Thread(r).start();
+        });
+
+        record.writeTextToFile("Started collecting data at: " + String.valueOf(DataGatheringFacade.get_timestamp()));
+        thread.start();
     }
 
+    /**
+     * Stop all associated logging processes (thread and event listeners)
+     */
     public void stopLogging() {
+        thread.interrupt();
+        logging = false;
         sm.unregisterListener(this);
         lm.removeUpdates(this);
-        logging = false;
-        record.closeFile();
+        record.writeTextToFile("Stopped collecting data at: " + String.valueOf(DataGatheringFacade.get_timestamp()));
     }
 
     private void testSensorsAvailable() {
@@ -304,6 +319,8 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     public void onSensorChanged(SensorEvent event) {
         int i = sensorMap[event.sensor.getType() - 1];
         data[i] = event.values[0];
+
+        // Check for sensors that return values along three axes
         if (i == 1 || i == 2 || i == 3 || i == 4 || i == 9 || i == 10 || i == 11 || i == 14 || i == 15 || i == 16 || i == 20) {
             data[i + 1] = event.values[1];
             data[i + 2] = event.values[2];
