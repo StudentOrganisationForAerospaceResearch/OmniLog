@@ -9,7 +9,7 @@ import java.util.List;
  * alexander.hamilton@ucalgary.ca
  */
 
-public class Parachute_Controller {
+public class ParachuteController {
 
 
     List<Integer> firstHalf, secondHalf;
