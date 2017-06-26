@@ -11,6 +11,7 @@ import java.util.List;
 
 public class Parachute_Controller {
 
+
     List<Integer> firstHalf, secondHalf;
     boolean primary_deployed, secondary_deployed;
 
