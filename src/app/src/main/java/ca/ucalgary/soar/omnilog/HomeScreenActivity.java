@@ -49,6 +49,7 @@ public class HomeScreenActivity extends Activity {
                 //Log the fact that the status request was received
                 Log.d("StatusRequestRecieved", "Received");
                 //Send a text back regarding the status
+                //Note that the first parameter, the phone number should be replaced with the senders number, right now it is sending the status to itself for testing purposes
                 sendSMS("5555215554", dataGatherer.status());
                 //Toast.makeText(getBaseContext(), dataGatherer.status(), Toast.LENGTH_SHORT).show(); //This was used as a quick result for testing purposes
             }

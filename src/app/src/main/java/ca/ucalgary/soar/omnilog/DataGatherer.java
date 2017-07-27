@@ -304,7 +304,7 @@ public class DataGatherer implements SensorEventListener, LocationListener {
 
     public String status() {
         String newline = System.getProperty("line.separator");//This will retrieve line separator dependent on OS.
-        String stat = "Parachute Status:" + newline + "   Drouge: Deployed" + newline + "Main: Not Deployed" + newline + newline +
+        String stat = "Parachute Status:" + newline + "   Drouge: Deployed" + newline + "   Main: Not Deployed" + newline + newline +
                 "Altitude: " + data[gpsIndex+2] + "m" + newline + "GPS: " + data[gpsIndex] + ", " + data[gpsIndex+1] + newline +
                 "Batt: 90%" + newline + "Landed: false";
         return stat;

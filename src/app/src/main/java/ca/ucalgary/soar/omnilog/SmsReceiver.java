@@ -30,7 +30,7 @@ public class SmsReceiver extends BroadcastReceiver {
 
             String sender = smsMessage.getDisplayOriginatingAddress();
 
-            //true is a placeholder for comparing sender number
+            //true is a placeholder for checking for appropriate sender number
             if (true) {
                 String messageBody = smsMessage.getMessageBody();
                 if(messageBody.toLowerCase().equals("status"))
