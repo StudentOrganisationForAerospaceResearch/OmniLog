@@ -44,13 +44,13 @@ public class HomeScreenActivity extends Activity {
         SmsReceiver.bindListener(new SmsListener() {
             @Override
             //If the smsReceiver found its status request (look at SmsReceiver for more details
-            public void statusRequestReceived() {
+            public void statusRequestReceived(String sender) {
 
                 //Log the fact that the status request was received
                 Log.d("StatusRequestRecieved", "Received");
                 //Send a text back regarding the status
                 //Note that the first parameter, the phone number should be replaced with the senders number, right now it is sending the status to itself for testing purposes
-                sendSMS("5555215554", dataGatherer.status());
+                sendSMS(sender, dataGatherer.status());
                 //Toast.makeText(getBaseContext(), dataGatherer.status(), Toast.LENGTH_SHORT).show(); //This was used as a quick result for testing purposes
             }
         });
@@ -63,7 +63,7 @@ public class HomeScreenActivity extends Activity {
         text = (TextView) findViewById(R.id.textView);
         text.setText("Not Logging");
         logging = false;
-        dataGatherer = new DataGatherer((SensorManager)this.getSystemService(SENSOR_SERVICE), (LocationManager)this.getSystemService(Context.LOCATION_SERVICE));
+        dataGatherer = new DataGatherer((SensorManager)this.getSystemService(SENSOR_SERVICE), (LocationManager)this.getSystemService(Context.LOCATION_SERVICE), this);
 
         button.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v){

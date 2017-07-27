@@ -35,7 +35,7 @@ public class SmsReceiver extends BroadcastReceiver {
                 String messageBody = smsMessage.getMessageBody();
                 if(messageBody.toLowerCase().equals("status"))
                     //This will call the statusRequestReceived in the HomeScreenActivity
-                    smsListener.statusRequestReceived();
+                    smsListener.statusRequestReceived(sender);
             }
         }
     }

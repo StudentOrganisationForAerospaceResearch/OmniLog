@@ -6,5 +6,5 @@ package ca.ucalgary.soar.omnilog;
 
 //An interface used to allow the HomeScreenActivity to send a text message as it has access to the dataGatherer
 public interface SmsListener {
-    public void statusRequestReceived();
+    public void statusRequestReceived(String sender);
 }

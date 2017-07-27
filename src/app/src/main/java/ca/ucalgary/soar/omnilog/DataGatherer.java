@@ -1,7 +1,9 @@
 package ca.ucalgary.soar.omnilog;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
@@ -10,6 +12,7 @@ import android.location.LocationManager;
 import android.location.LocationListener;
 import android.hardware.Sensor;
 import android.os.Bundle;
+import android.os.BatteryManager;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -28,6 +31,7 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     private float[] data;
     private boolean logging;
     private static final int recordDelay = 10;
+    private Activity activity;
 
     //This is a preconstructed list denoting the sensors we actually care to listen for, flase represents those we don't such as heart rate etc.
     //                           accel, mag,       ,gyro,light, press,     , proxi, grav, LA,  rota, humid, temp,                      sigmo                geo-rot,                                                 station,motion
@@ -39,7 +43,8 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     };*/
     int[] sensorMap = new int[sensorsAvailable.length];
 
-    public DataGatherer(SensorManager SM, LocationManager LM) {
+    public DataGatherer(SensorManager SM, LocationManager LM, Activity active) {
+        activity = active;
         //Stores the sensorManager and locationManager used by the device as passed down from the activity.
         sm = SM;
         lm = LM;
@@ -306,8 +311,21 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         String newline = System.getProperty("line.separator");//This will retrieve line separator dependent on OS.
         String stat = "Parachute Status:" + newline + "   Drouge: Deployed" + newline + "   Main: Not Deployed" + newline + newline +
                 "Altitude: " + data[gpsIndex+2] + "m" + newline + "GPS: " + data[gpsIndex] + ", " + data[gpsIndex+1] + newline +
-                "Batt: 90%" + newline + "Landed: false";
+                "Batt: " + getBatteryLevel() + "%" + newline + "Landed: false";
         return stat;
+    }
+
+    public float getBatteryLevel() {
+        Intent batteryIntent = activity.registerReceiver(null, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
+        int level = batteryIntent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
+        int scale = batteryIntent.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
+
+        // Error checking that probably isn't needed but I added just in case.
+        if(level == -1 || scale == -1) {
+            return 50.0f;
+        }
+
+        return ((float)level / (float)scale) * 100.0f;
     }
 
     @Override
