@@ -26,8 +26,8 @@ import android.support.test.runner.AndroidJUnit4;
 public class ButtonTest {
 
     @Rule
-    public ActivityTestRule<MainActivity> mActivityRule = new ActivityTestRule<>(
-            MainActivity.class);
+    public ActivityTestRule<HomeScreenActivity> mActivityRule = new ActivityTestRule<>(
+            HomeScreenActivity.class);
 
 
 
@@ -35,7 +35,7 @@ public class ButtonTest {
     //Test that the activity begins not logging
     public void TestNot_Logging() throws Exception {
         Intent intent = new Intent(Intent.ACTION_PICK);
-        MainActivity A = mActivityRule.launchActivity(intent);
+        HomeScreenActivity A = mActivityRule.launchActivity(intent);
 
         assertFalse(A.is_logging());
     }
@@ -44,7 +44,7 @@ public class ButtonTest {
     //Test that the activity can begin logging
     public void TestStart_Logging() throws Exception {
         Intent intent = new Intent(Intent.ACTION_PICK);
-        MainActivity A = mActivityRule.launchActivity(intent);
+        HomeScreenActivity A = mActivityRule.launchActivity(intent);
 
         A.startLogging();
         assertTrue(A.is_logging());
@@ -54,7 +54,7 @@ public class ButtonTest {
     //Test that logging can be halted
     public void TestStop_Logging() throws Exception {
         Intent intent = new Intent(Intent.ACTION_PICK);
-        MainActivity A = mActivityRule.launchActivity(intent);
+        HomeScreenActivity A = mActivityRule.launchActivity(intent);
 
         A.startLogging();
         assertTrue(A.is_logging());
@@ -69,7 +69,7 @@ public class ButtonTest {
     // Begins logging upon Button press
     public void Test_PressButton(){
         Intent intent = new Intent(Intent.ACTION_PICK);
-        MainActivity mActivity = mActivityRule.launchActivity(intent);
+        HomeScreenActivity mActivity = mActivityRule.launchActivity(intent);
         Button button = (Button) mActivity.findViewById(R.id.button);
 
         button.callOnClick();
@@ -81,7 +81,7 @@ public class ButtonTest {
     //Stops logging upon second Button press
     public void Test_2PressButton(){
         Intent intent = new Intent(Intent.ACTION_PICK);
-        MainActivity mActivity = mActivityRule.launchActivity(intent);
+        HomeScreenActivity mActivity = mActivityRule.launchActivity(intent);
         Button button = (Button) mActivity.findViewById(R.id.button);
 
         button.callOnClick();

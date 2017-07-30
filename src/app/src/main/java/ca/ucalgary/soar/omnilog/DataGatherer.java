@@ -15,8 +15,9 @@ import android.os.Bundle;
 import android.os.BatteryManager;
 import android.telephony.SmsManager;
 import android.util.Log;
-
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.GregorianCalendar;
 
 /**
  * Created by Colt on 18/06/2017.
@@ -262,8 +263,9 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         } catch (SecurityException e) {
         }
         //Set logging to true and open up a thread that will continuously write the sensor readings until logging is false (when logging is stopped)
+        GregorianCalendar T = new GregorianCalendar();
         logging = true;
-        record = new Record("Record");
+        record = new Record(String.format("Record_%s",T.getTime().toString()));
         record.writeToFile(sensors);
         Runnable r = new Runnable() {
             public void run() {
