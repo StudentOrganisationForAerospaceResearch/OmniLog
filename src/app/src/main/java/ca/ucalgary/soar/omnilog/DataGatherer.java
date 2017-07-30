@@ -310,10 +310,11 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     }
 
     public String status() {
-        String newline = System.getProperty("line.separator");//This will retrieve line separator dependent on OS.
-        String stat = "Parachute Status:" + newline + "   Drouge: Deployed" + newline + "   Main: Not Deployed" + newline + newline +
-                "Altitude: " + data[gpsIndex+2] + "m" + newline + "GPS: " + data[gpsIndex] + ", " + data[gpsIndex+1] + newline +
-                "Batt: " + getBatteryLevel() + "%" + newline + "Landed: false";
+        String nl = System.getProperty("line.separator");//This will retrieve line separator dependent on OS.
+
+        String stat = String.format("Parachute Status:" + nl + "   Drouge: Not Deployed" + nl + "   Main: Not Deployed" + nl + nl +
+                "Altitude: %.2f" + "m" + nl + "GPS: %f" + ", %f" + nl + "Batt: %.2f" + nl + "Landed: false",
+                data[gpsIndex+2],data[gpsIndex],data[gpsIndex+1],getBatteryLevel());
         return stat;
     }
 
@@ -347,7 +348,7 @@ public class DataGatherer implements SensorEventListener, LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        data[gpsIndex] = (float) location.getLatitude();
+        data[gpsIndex] =     (float) location.getLatitude();
         data[gpsIndex + 1] = (float) location.getLongitude();
         data[gpsIndex + 2] = (float) location.getAltitude();
     }
