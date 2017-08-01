@@ -15,6 +15,8 @@ import android.os.Bundle;
 import android.os.BatteryManager;
 import android.telephony.SmsManager;
 import android.util.Log;
+import android.widget.Toast;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
@@ -27,7 +29,8 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     private SensorManager sm;
     private LocationManager lm;
     private Record record;
-    private int gpsIndex;
+    private int gpsIndex = -1;
+    private int netIndex = -1;
     private String[] sensors;
     private float[] data;
     private boolean logging;
@@ -83,7 +86,7 @@ public class DataGatherer implements SensorEventListener, LocationListener {
             }
         }
         //Increase it by 3 because we would like to add the gps Latitude, Longitude, and Altitude
-        count += 3;
+        count += 6;
         //Construct a new array of Strings that will be used to form the "header" of the file (its format)
         //It will list the names of the sensors fields in the order that we will be writing them
         sensors = new String[count];
@@ -223,18 +226,23 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         }
         //Attempt to add the gps fields if it is available
         try {
+            int newCount = count;
             if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-                sensors[count] = "GPS_Latitude";
-                sensors[count + 1] = "GPS_Longitude";
-                sensors[count + 2] = "GPS_Altitude";
-                gpsIndex = count;
-            } else if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-                sensors[count] = "Network_Latitude";
-                sensors[count + 1] = "Network_Longitude";
-                sensors[count + 2] = "Network_Altitude";
-                gpsIndex = count;
+                sensors[newCount] = "GPS_Latitude";
+                sensors[newCount + 1] = "GPS_Longitude";
+                sensors[newCount + 2] = "GPS_Altitude";
+                gpsIndex = newCount;
+                newCount += 3;
+            }
+            if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+                sensors[newCount] = "Network_Latitude";
+                sensors[newCount + 1] = "Network_Longitude";
+                sensors[newCount + 2] = "Network_Altitude";
+                netIndex = newCount;
             }
         } catch (SecurityException e) {
+            Toast.makeText(activity.getBaseContext(), e.toString(),
+                    Toast.LENGTH_SHORT).show();
         }
         //Construct the data array that will contain the data for each field we have
         data = new float[sensors.length];
@@ -257,7 +265,8 @@ public class DataGatherer implements SensorEventListener, LocationListener {
         try {
             if (lm.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
                 lm.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, this);
-            } else if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+            }
+            if (lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
                 lm.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, this);
             }
         } catch (SecurityException e) {
@@ -312,9 +321,14 @@ public class DataGatherer implements SensorEventListener, LocationListener {
     public String status() {
         String nl = System.getProperty("line.separator");//This will retrieve line separator dependent on OS.
 
-        String stat = String.format("Parachute Status:" + nl + "   Drouge: Not Deployed" + nl + "   Main: Not Deployed" + nl + nl +
-                "Altitude: %.2f" + "m" + nl + "GPS: %f" + ", %f" + nl + "Batt: %.2f" + nl + "Landed: false",
-                data[gpsIndex+2],data[gpsIndex],data[gpsIndex+1],getBatteryLevel());
+        String stat = String.format("Parachute Status:" + nl + "   Drouge: Not Deployed" + nl + "   Main: Not Deployed" + nl + nl);
+        if(gpsIndex != -1) {
+            stat += String.format("GPS Coordinates" + nl + "Altitude: %.2f" + "m" + nl + "GPS: %f" + ", %f" + nl, data[gpsIndex + 2], data[gpsIndex], data[gpsIndex + 1]);
+        }
+        if(netIndex != -1) {
+            stat += String.format("Net Provider Coordinates" + nl + "Altitude: %.2f" + "m" + nl + "Coordinates: %f" + ", %f" + nl, data[netIndex + 2], data[netIndex], data[netIndex + 1]);
+        }
+        stat += String.format("Batt: %.2f" + nl + "Landed: false", getBatteryLevel());
         return stat;
     }
 
@@ -348,9 +362,16 @@ public class DataGatherer implements SensorEventListener, LocationListener {
 
     @Override
     public void onLocationChanged(Location location) {
-        data[gpsIndex] =     (float) location.getLatitude();
-        data[gpsIndex + 1] = (float) location.getLongitude();
-        data[gpsIndex + 2] = (float) location.getAltitude();
+        if(location.getProvider() == LocationManager.GPS_PROVIDER) {
+            data[gpsIndex] =     (float) location.getLatitude();
+            data[gpsIndex + 1] = (float) location.getLongitude();
+            data[gpsIndex + 2] = (float) location.getAltitude();
+        }
+        else {
+            data[netIndex] =     (float) location.getLatitude();
+            data[netIndex + 1] = (float) location.getLongitude();
+            data[netIndex + 2] = (float) location.getAltitude();
+        }
     }
 
     @Override
